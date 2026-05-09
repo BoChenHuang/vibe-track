@@ -7,14 +7,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger as WinstonLogger } from 'winston';
 import { ClaudeService } from '../claude/claude.service';
 import { SpotifyService, SpotifyTrack } from '../spotify/spotify.service';
-
-export interface TrackResult {
-  title: string;
-  artist: string;
-  spotify_url: string;
-  preview_url: string | null;
-  reason: string;
-}
+import { AnalyzeResponseDto } from './dto/analyze-response.dto';
 
 @Injectable()
 export class AnalyzeService {
@@ -27,7 +20,7 @@ export class AnalyzeService {
   async analyze(
     text?: string,
     imageFile?: Express.Multer.File,
-  ): Promise<{ tracks: TrackResult[] }> {
+  ): Promise<AnalyzeResponseDto> {
     if (!text && !imageFile) {
       throw new UnprocessableEntityException(
         'At least one of text or image must be provided.',
@@ -63,6 +56,7 @@ export class AnalyzeService {
       tracks: selections
         .filter((s) => s.index >= 0 && s.index < candidates.length)
         .map((s) => ({
+          id: candidates[s.index].id,
           title: candidates[s.index].title,
           artist: candidates[s.index].artist,
           spotify_url: candidates[s.index].spotify_url,
