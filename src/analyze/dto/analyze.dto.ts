@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import { MarketCode } from './market.enum';
 
 export class AnalyzeDto {
   @ApiPropertyOptional({
@@ -11,4 +12,14 @@ export class AnalyzeDto {
   @IsString()
   @MaxLength(300)
   text?: string;
+
+  @ApiPropertyOptional({
+    enum: MarketCode,
+    description:
+      'Spotify market code to filter songs available in that market and guide query style',
+    example: MarketCode.TW,
+  })
+  @IsOptional()
+  @IsEnum(MarketCode)
+  market?: MarketCode;
 }

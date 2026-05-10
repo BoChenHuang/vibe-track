@@ -20,6 +20,7 @@ export class AnalyzeService {
   async analyze(
     text?: string,
     imageFile?: Express.Multer.File,
+    market?: string,
   ): Promise<AnalyzeResponseDto> {
     if (!text && !imageFile) {
       throw new UnprocessableEntityException(
@@ -30,25 +31,31 @@ export class AnalyzeService {
     this.logger.debug('Starting mood analysis', {
       hasText: !!text,
       hasImage: !!imageFile,
+      market,
     });
 
     const moodParams = await this.claudeService.analyzeMood(
       text,
       imageFile?.buffer,
       imageFile?.mimetype,
+      market,
     );
 
     this.logger.info('Mood queries generated', { queries: moodParams.queries });
 
     const candidates: SpotifyTrack[] =
-      await this.spotifyService.searchByQueries(moodParams.queries);
+      await this.spotifyService.searchByQueries(moodParams.queries, market);
 
     if (candidates.length === 0) {
       return { tracks: [] };
     }
 
     const selections = await this.claudeService.selectTracks(
-      candidates.map((c) => ({ title: c.title, artist: c.artist })),
+      candidates.map((c) => ({
+        title: c.title,
+        artist: c.artist,
+        popularity: c.popularity,
+      })),
       moodParams.reason,
     );
 
@@ -61,6 +68,7 @@ export class AnalyzeService {
           artist: candidates[s.index].artist,
           spotify_url: candidates[s.index].spotify_url,
           preview_url: candidates[s.index].preview_url,
+          popularity: candidates[s.index].popularity,
           reason: s.reason,
         })),
     };

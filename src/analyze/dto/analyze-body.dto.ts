@@ -1,4 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEnum, IsOptional } from 'class-validator';
+import { MarketCode } from './market.enum';
 
 export class AnalyzeBodyDto {
   @ApiPropertyOptional({
@@ -16,4 +18,14 @@ export class AnalyzeBodyDto {
     description: 'Image file representing the mood (JPEG or PNG)',
   })
   image?: Express.Multer.File;
+
+  @ApiPropertyOptional({
+    enum: MarketCode,
+    description:
+      'Spotify market code to filter songs available in that market and guide query style',
+    example: MarketCode.TW,
+  })
+  @IsOptional()
+  @IsEnum(MarketCode)
+  market?: MarketCode;
 }

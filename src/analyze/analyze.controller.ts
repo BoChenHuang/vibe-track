@@ -56,6 +56,6 @@ export class AnalyzeController {
     @Body() body: AnalyzeDto = {},
     @UploadedFile(new FileValidationPipe()) image?: Express.Multer.File,
   ): Promise<AnalyzeResponseDto> {
-    return this.analyzeService.analyze(body?.text, image);
+    return this.analyzeService.analyze(body?.text, image, body?.market);
   }
 }

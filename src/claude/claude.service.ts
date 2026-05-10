@@ -35,7 +35,10 @@ queries 規則：
 - 三組需有差異性，涵蓋不同風格角度
 - 不要使用抽象描述或句子`;
 
+// TODO: popularity soft preference is ineffective in Spotify dev mode (values are null);
+//       will work automatically once Extended Quota is granted
 const SELECT_SYSTEM_PROMPT = `你是音樂推薦專家。根據情緒背景，從候選歌曲中選出最適合的 8 首（候選不足 8 首則全選），為每首產出一句繁體中文推薦理由。
+每首候選歌曲附有 popularity 數值（0–100），數值越高表示越熱門。在情緒吻合的前提下，優先選擇 popularity 較高的歌曲。
 回傳固定 JSON 陣列格式，不要有任何其他文字：
 [
   { "index": <候選索引整數>, "reason": "<繁體中文推薦理由>" }
@@ -58,6 +61,7 @@ export class ClaudeService {
     text?: string,
     imageBuffer?: Buffer,
     mimeType?: string,
+    market?: string,
   ): Promise<MoodParams> {
     const content: Anthropic.MessageParam['content'] = [];
 
@@ -74,6 +78,13 @@ export class ClaudeService {
 
     if (text) {
       content.push({ type: 'text', text });
+    }
+
+    if (market) {
+      content.push({
+        type: 'text',
+        text: `市場偏好：${market}，請生成符合該市場主流音樂風格的搜尋 query。`,
+      });
     }
 
     this.logger.debug('Calling Claude API for mood analysis');
@@ -103,11 +114,14 @@ export class ClaudeService {
   }
 
   async selectTracks(
-    candidates: { title: string; artist: string }[],
+    candidates: { title: string; artist: string; popularity: number }[],
     moodReason: string,
   ): Promise<TrackSelection[]> {
     const candidateList = candidates
-      .map((c, i) => `${i}. ${c.title} - ${c.artist}`)
+      .map(
+        (c, i) =>
+          `${i}. ${c.title} - ${c.artist} (popularity: ${c.popularity})`,
+      )
       .join('\n');
 
     const userMessage = `情緒背景：${moodReason}\n\n候選歌曲：\n${candidateList}`;

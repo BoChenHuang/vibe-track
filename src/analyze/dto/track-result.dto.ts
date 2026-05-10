@@ -19,6 +19,14 @@ export class TrackResultDto {
   })
   preview_url: string | null;
 
+  // TODO: null in Spotify dev mode; requires Extended Quota for real values
+  @ApiProperty({
+    example: 72,
+    nullable: true,
+    description: 'Spotify popularity score (0–100); null in dev mode',
+  })
+  popularity: number | null;
+
   @ApiProperty({
     example: 'Melancholic yet beautiful, matching the reflective mood',
   })

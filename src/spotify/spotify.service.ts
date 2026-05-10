@@ -13,6 +13,7 @@ export interface SpotifyTrack {
   artist: string;
   spotify_url: string;
   preview_url: string | null;
+  popularity: number;
 }
 
 interface TokenCache {
@@ -74,9 +75,12 @@ export class SpotifyService {
     return this.tokenCache.token;
   }
 
-  async searchByQueries(queries: string[]): Promise<SpotifyTrack[]> {
+  async searchByQueries(
+    queries: string[],
+    market?: string,
+  ): Promise<SpotifyTrack[]> {
     const results = await Promise.all(
-      queries.map((q) => this.searchByQuery(q)),
+      queries.map((q) => this.searchByQuery(q, market)),
     );
 
     const seen = new Set<string>();
@@ -98,9 +102,13 @@ export class SpotifyService {
     return merged;
   }
 
-  private async searchByQuery(query: string): Promise<SpotifyTrack[]> {
+  private async searchByQuery(
+    query: string,
+    market?: string,
+  ): Promise<SpotifyTrack[]> {
     const token = await this.getAccessToken();
-    const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=10`;
+    const marketParam = market ? `&market=${encodeURIComponent(market)}` : '';
+    const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=10${marketParam}`;
 
     this.logger.info('Spotify search', { query });
 
@@ -126,6 +134,7 @@ export class SpotifyService {
           artists: Array<{ name: string }>;
           external_urls: { spotify: string };
           preview_url: string | null;
+          popularity: number;
         }>;
       };
     };
@@ -136,6 +145,8 @@ export class SpotifyService {
       artist: item.artists[0]?.name ?? '',
       spotify_url: item.external_urls.spotify,
       preview_url: item.preview_url,
+      // TODO: popularity is null in Spotify dev mode; requires Extended Quota to receive real values
+      popularity: item.popularity,
     }));
   }
 }
