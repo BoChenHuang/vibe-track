@@ -14,6 +14,7 @@ export interface SpotifyTrack {
   spotify_url: string;
   preview_url: string | null;
   popularity: number;
+  album_image_url: string | null;
 }
 
 interface TokenCache {
@@ -135,6 +136,7 @@ export class SpotifyService {
           external_urls: { spotify: string };
           preview_url: string | null;
           popularity: number;
+          album: { images: Array<{ url: string }> };
         }>;
       };
     };
@@ -147,6 +149,7 @@ export class SpotifyService {
       preview_url: item.preview_url,
       // TODO: popularity is null in Spotify dev mode; requires Extended Quota to receive real values
       popularity: item.popularity,
+      album_image_url: item.album.images[0]?.url ?? null,
     }));
   }
 }

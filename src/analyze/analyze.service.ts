@@ -81,6 +81,7 @@ export class AnalyzeService {
           spotify_url: candidates[s.index].spotify_url,
           preview_url: candidates[s.index].preview_url,
           popularity: candidates[s.index].popularity,
+          album_image_url: candidates[s.index].album_image_url,
           reason: s.reason,
         })),
     };

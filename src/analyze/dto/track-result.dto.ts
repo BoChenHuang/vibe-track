@@ -28,6 +28,13 @@ export class TrackResultDto {
   popularity: number | null;
 
   @ApiProperty({
+    nullable: true,
+    example: 'https://i.scdn.co/image/ab67616d0000b273abc123',
+    description: 'Album cover image URL (640x640); null if unavailable',
+  })
+  album_image_url: string | null;
+
+  @ApiProperty({
     example: 'Melancholic yet beautiful, matching the reflective mood',
   })
   reason: string;
