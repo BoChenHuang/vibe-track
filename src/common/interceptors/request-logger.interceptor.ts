@@ -29,11 +29,17 @@ export class RequestLoggerInterceptor implements NestInterceptor {
     }
 
     const { method, url } = req;
+    const forwarded = req.headers['x-forwarded-for'];
+    const ip =
+      (Array.isArray(forwarded) ? forwarded[0] : forwarded) ??
+      req.ip ??
+      'unknown';
     const input = req.body as Record<string, unknown> | null | undefined;
     const start = Date.now();
 
     this.logger.info(`→ ${method} ${url}`, {
       context: 'RequestLoggerInterceptor',
+      ip,
       ...(input && Object.keys(input).length > 0 && { input }),
     });
 
@@ -42,6 +48,8 @@ export class RequestLoggerInterceptor implements NestInterceptor {
         const duration = Date.now() - start;
         this.logger.info(`← ${method} ${url} ${res.statusCode} ${duration}ms`, {
           context: 'RequestLoggerInterceptor',
+          ip,
+          duration,
           ...(output != null && { output: output as Record<string, unknown> }),
         });
       }),

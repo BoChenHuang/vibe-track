@@ -3,6 +3,7 @@ import {
   Controller,
   Post,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import {
@@ -19,6 +20,7 @@ import { AnalyzeBodyDto } from './dto/analyze-body.dto';
 import { AnalyzeDto } from './dto/analyze.dto';
 import { AnalyzeResponseDto } from './dto/analyze-response.dto';
 import { FileValidationPipe } from '../common/pipes/file-validation.pipe';
+import { RateLimitGuard } from '../common/guards/rate-limit.guard';
 
 @ApiTags('analyze')
 @Controller('analyze')
@@ -26,6 +28,7 @@ export class AnalyzeController {
   constructor(private readonly analyzeService: AnalyzeService) {}
 
   @Post()
+  @UseGuards(RateLimitGuard)
   @UseInterceptors(FileInterceptor('image'))
   @ApiOperation({
     summary: 'Analyze mood and recommend tracks',

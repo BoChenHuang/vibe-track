@@ -19,7 +19,7 @@
 - 需要原子操作（INCR + EXPIRE）實作 rate limiting，`cache-manager` 抽象層不夠靈活
 - `CacheService` 封裝所有 Redis 操作，其他模組不直接用 ioredis
 
-**D2：Rate Limiting 用 Redis INCR + EXPIRE 實作 sliding window**
+**D2：Rate Limiting 用 Redis INCR + EXPIRE 實作 fixed window counter**
 - key：`ratelimit:{ip}`，TTL 60 秒
 - 每次請求 INCR，若結果為 1 則設 EXPIRE 60
 - 若 INCR 結果 > 5 則拒絕

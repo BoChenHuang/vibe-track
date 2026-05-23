@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import {
   Inject,
   Injectable,
@@ -7,7 +8,10 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger as WinstonLogger } from 'winston';
 import { ClaudeService } from '../claude/claude.service';
 import { SpotifyService, SpotifyTrack } from '../spotify/spotify.service';
+import { CacheService } from '../cache/cache.service';
 import { AnalyzeResponseDto } from './dto/analyze-response.dto';
+
+const CACHE_TTL_SECONDS = 86400;
 
 @Injectable()
 export class AnalyzeService {
@@ -15,6 +19,7 @@ export class AnalyzeService {
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: WinstonLogger,
     private readonly claudeService: ClaudeService,
     private readonly spotifyService: SpotifyService,
+    private readonly cacheService: CacheService,
   ) {}
 
   async analyze(
@@ -26,6 +31,13 @@ export class AnalyzeService {
       throw new UnprocessableEntityException(
         'At least one of text or image must be provided.',
       );
+    }
+
+    const cacheKey = this.buildCacheKey(text, imageFile?.buffer);
+    const cached = await this.cacheService.getCached(cacheKey);
+    if (cached) {
+      this.logger.info('Cache hit', { cacheKey });
+      return JSON.parse(cached) as AnalyzeResponseDto;
     }
 
     this.logger.debug('Starting mood analysis', {
@@ -59,7 +71,7 @@ export class AnalyzeService {
       moodParams.reason,
     );
 
-    return {
+    const result: AnalyzeResponseDto = {
       tracks: selections
         .filter((s) => s.index >= 0 && s.index < candidates.length)
         .map((s) => ({
@@ -72,5 +84,21 @@ export class AnalyzeService {
           reason: s.reason,
         })),
     };
+
+    await this.cacheService.setCached(
+      cacheKey,
+      JSON.stringify(result),
+      CACHE_TTL_SECONDS,
+    );
+
+    return result;
+  }
+
+  private buildCacheKey(text?: string, imageBuffer?: Buffer): string {
+    const hash = createHash('md5')
+      .update(text ?? '')
+      .update(imageBuffer ?? Buffer.alloc(0))
+      .digest('hex');
+    return `cache:${hash}`;
   }
 }
