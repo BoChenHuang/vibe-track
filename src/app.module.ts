@@ -11,6 +11,7 @@ import { AnalyzeModule } from './analyze/analyze.module';
 import { ClaudeModule } from './claude/claude.module';
 import { SpotifyModule } from './spotify/spotify.module';
 import { CacheModule } from './cache/cache.module';
+import { RateLimitModule } from './ratelimit/ratelimit.module';
 import { RequestLoggerInterceptor } from './common/interceptors/request-logger.interceptor';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
@@ -34,6 +35,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
     ClaudeModule,
     SpotifyModule,
     CacheModule,
+    RateLimitModule,
   ],
   controllers: [AppController],
   providers: [

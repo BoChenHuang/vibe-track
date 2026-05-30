@@ -10,6 +10,13 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger as WinstonLogger } from 'winston';
 import { Request, Response } from 'express';
 
+interface RateLimitInfo {
+  retryAfter: number;
+  limit: number;
+  remaining: number;
+  resetAt: number;
+}
+
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   constructor(
@@ -39,6 +46,24 @@ export class AllExceptionsFilter implements ExceptionFilter {
         method: req.method,
         stack: exception instanceof Error ? exception.stack : undefined,
       });
+    }
+
+    if (status === HttpStatus.TOO_MANY_REQUESTS) {
+      const info = (req as unknown as Record<string, unknown>).rateLimitInfo as
+        | RateLimitInfo
+        | undefined;
+      if (info) {
+        res.setHeader('Retry-After', info.retryAfter);
+        res.status(status).json({
+          error: 'rate_limited',
+          message: '請求次數已達上限，請稍後再試。',
+          retry_after: info.retryAfter,
+          limit: info.limit,
+          remaining: 0,
+          reset_at: info.resetAt,
+        });
+        return;
+      }
     }
 
     res.status(status).json({
