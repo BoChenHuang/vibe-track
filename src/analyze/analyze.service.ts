@@ -10,6 +10,7 @@ import { ClaudeService } from '../claude/claude.service';
 import { SpotifyService, SpotifyTrack } from '../spotify/spotify.service';
 import { CacheService } from '../cache/cache.service';
 import { AnalyzeResponseDto } from './dto/analyze-response.dto';
+import { MoodDto } from './dto/mood.dto';
 
 const CACHE_TTL_SECONDS = 86400;
 
@@ -36,8 +37,14 @@ export class AnalyzeService {
     const cacheKey = this.buildCacheKey(text, imageFile?.buffer);
     const cached = await this.cacheService.getCached(cacheKey);
     if (cached) {
-      this.logger.info('Cache hit', { cacheKey });
-      return JSON.parse(cached) as AnalyzeResponseDto;
+      const parsed = JSON.parse(cached) as AnalyzeResponseDto;
+      if (parsed.mood) {
+        this.logger.info('Cache hit', { cacheKey });
+        return parsed;
+      }
+      this.logger.info('Cache hit but missing mood field, recomputing', {
+        cacheKey,
+      });
     }
 
     this.logger.debug('Starting mood analysis', {
@@ -58,8 +65,14 @@ export class AnalyzeService {
     const candidates: SpotifyTrack[] =
       await this.spotifyService.searchByQueries(moodParams.queries, market);
 
+    const mood: MoodDto = {
+      label: moodParams.label,
+      sub: moodParams.sub,
+      tags: moodParams.tags,
+    };
+
     if (candidates.length === 0) {
-      return { tracks: [] };
+      return { mood, tracks: [] };
     }
 
     const selections = await this.claudeService.selectTracks(
@@ -72,6 +85,7 @@ export class AnalyzeService {
     );
 
     const result: AnalyzeResponseDto = {
+      mood,
       tracks: selections
         .filter((s) => s.index >= 0 && s.index < candidates.length)
         .map((s) => ({

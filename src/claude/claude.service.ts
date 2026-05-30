@@ -8,9 +8,17 @@ import Anthropic from '@anthropic-ai/sdk';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger as WinstonLogger } from 'winston';
 
+export interface MoodTag {
+  name: string;
+  primary: boolean;
+}
+
 export interface MoodParams {
   queries: string[];
   reason: string;
+  label: string;
+  sub: string;
+  tags: MoodTag[];
 }
 
 export interface TrackSelection {
@@ -26,14 +34,25 @@ const ANALYZE_SYSTEM_PROMPT = `你是一個情緒分析專家，也熟悉 Spotif
     "<2~3個英文詞的Spotify搜尋query>",
     "<2~3個英文詞的Spotify搜尋query>"
   ],
-  "reason": "<中文說明整體情緒與推薦方向>"
+  "reason": "<中文說明整體情緒與推薦方向>",
+  "label": "<主情緒英文標籤，如 Melancholic、Energetic、Calm、Nostalgic>",
+  "sub": "<次情緒英文短語，如 quietly nostalgic、softly restless、gently hopeful>",
+  "tags": [
+    { "name": "<情緒英文名詞>", "primary": true },
+    { "name": "<情緒英文名詞>", "primary": false }
+  ]
 }
 
 queries 規則：
 - 每組限 2~3 個英文詞
 - 使用音樂風格、情緒形容詞、樂器名稱等 Spotify 可辨識詞彙
 - 三組需有差異性，涵蓋不同風格角度
-- 不要使用抽象描述或句子`;
+- 不要使用抽象描述或句子
+
+tags 規則：
+- 提供 3~5 個情緒標籤
+- 恰好一個標籤的 primary 為 true（最主要的情緒）
+- 其餘標籤的 primary 為 false`;
 
 // TODO: popularity soft preference is ineffective in Spotify dev mode (values are null);
 //       will work automatically once Extended Quota is granted

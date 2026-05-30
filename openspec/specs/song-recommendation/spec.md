@@ -65,3 +65,14 @@
 #### Scenario: 不帶 market 的 query 生成
 - **WHEN** 請求不含 `market`
 - **THEN** Claude 生成行為與現有相同，不限風格方向
+
+### Requirement: API 回應頂層包含 mood 欄位
+系統 SHALL 在 `POST /analyze` 回應中，將 `mood` 欄位置於 `tracks` 之前，回應結構為 `{ mood, tracks }`。
+
+#### Scenario: 成功推薦後回應結構
+- **WHEN** 發送 `POST /analyze`，text 或圖片合法
+- **THEN** 回傳 HTTP 200，body 頂層同時包含 `mood` 與 `tracks` 兩個欄位
+
+#### Scenario: Swagger 文件反映新欄位
+- **WHEN** 訪問 `GET /api/docs`
+- **THEN** `POST /analyze` 回應 schema 包含 `mood` 欄位的完整型別定義（MoodDto）
