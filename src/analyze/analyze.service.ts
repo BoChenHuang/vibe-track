@@ -27,7 +27,9 @@ export class AnalyzeService {
     text?: string,
     imageFile?: Express.Multer.File,
     market?: string,
+    limit?: number,
   ): Promise<AnalyzeResponseDto> {
+    const resolvedLimit = limit ?? 8;
     if (!text && !imageFile) {
       throw new UnprocessableEntityException(
         'At least one of text or image must be provided.',
@@ -82,6 +84,7 @@ export class AnalyzeService {
         popularity: c.popularity,
       })),
       moodParams.reason,
+      resolvedLimit,
     );
 
     const result: AnalyzeResponseDto = {

@@ -1,6 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsEnum, IsIn, IsOptional } from 'class-validator';
 import { MarketCode } from './market.enum';
+
+const TRACK_LIMITS = [5, 8, 10] as const;
 
 export class AnalyzeBodyDto {
   @ApiPropertyOptional({
@@ -28,4 +31,14 @@ export class AnalyzeBodyDto {
   @IsOptional()
   @IsEnum(MarketCode)
   market?: MarketCode;
+
+  @ApiPropertyOptional({
+    enum: TRACK_LIMITS,
+    default: 8,
+    description: 'Number of tracks to return (5, 8, or 10)',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsIn(TRACK_LIMITS)
+  limit?: number;
 }

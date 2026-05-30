@@ -155,3 +155,22 @@ Target archive directory already exists.
 - Show clear summary of what happened
 - If sync is requested, use the Skill tool to invoke `openspec-sync-specs` (agent-driven)
 - If delta specs exist, always run the sync assessment and show the combined summary before prompting
+
+
+**Commit Message**
+
+After displaying the archive summary, generate and display a suggested git commit message based on what was actually changed in this change (not the archive action itself). Read the change's tasks, artifacts, and delta specs to infer the intent.
+
+> 💬 `<type>(<scope>): <short description of the actual change>`
+
+Rules:
+- Use conventional commits format: `feat`, `fix`, `refactor`, `chore`, etc.
+- `scope` is optional, use it if there's a clear component or area
+- Description should reflect what the change does, not that it was archived
+- Keep total length under 72 characters
+- Write in English, imperative mood ("add", "fix", "update", not "added")
+
+Examples:
+- `feat: add rate limit options for track API`
+- `feat(auth): add OAuth2 login support`
+- `fix(payment): handle missing currency field`

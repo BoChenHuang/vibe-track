@@ -65,7 +65,7 @@ src/
 │   ├── analyze.service.ts               # 流程協調：cache → Claude → Spotify → cache
 │   └── dto/
 │       ├── analyze-body.dto.ts          # Swagger 請求 body 定義
-│       ├── analyze.dto.ts               # 內部請求 DTO（text、market）
+│       ├── analyze.dto.ts               # 內部請求 DTO（text、market、limit）
 │       ├── analyze-response.dto.ts      # 回應：{ tracks }
 │       ├── track-result.dto.ts          # 單首歌曲格式
 │       └── market.enum.ts               # Spotify market 代碼
@@ -114,9 +114,11 @@ Content-Type: `multipart/form-data`
 | `text` | string | text/image 擇一 | 情緒描述文字 |
 | `image` | file | text/image 擇一 | 圖片檔（JPEG/PNG/WebP/GIF）|
 | `market` | string | 否 | Spotify market 代碼（例如 `TW`、`US`）|
+| `limit` | number | 否 | 回傳歌曲數量（5 / 8 / 10），預設 8 |
 
-**回應：** `{ tracks: TrackResultDto[] }`  
-每首歌曲：`{ id, title, artist, spotify_url, preview_url, popularity, reason }`
+**回應：** `{ mood: MoodDto, tracks: TrackResultDto[] }`  
+情緒摘要：`{ label, sub, tags: [{ name, primary }] }`  
+每首歌曲：`{ id, title, artist, spotify_url, preview_url, popularity, album_image_url, reason }`
 
 **速率限制：** 每個 IP 每 60 秒最多 5 次，超過回傳 429。
 

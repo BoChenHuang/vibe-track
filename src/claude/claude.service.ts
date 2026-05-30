@@ -56,12 +56,14 @@ tags 規則：
 
 // TODO: popularity soft preference is ineffective in Spotify dev mode (values are null);
 //       will work automatically once Extended Quota is granted
-const SELECT_SYSTEM_PROMPT = `你是音樂推薦專家。根據情緒背景，從候選歌曲中選出最適合的 8 首（候選不足 8 首則全選），為每首產出一句繁體中文推薦理由。
+function buildSelectSystemPrompt(limit: number): string {
+  return `你是音樂推薦專家。根據情緒背景，從候選歌曲中選出最適合的 ${limit} 首（候選不足 ${limit} 首則全選），為每首產出一句繁體中文推薦理由。
 每首候選歌曲附有 popularity 數值（0–100），數值越高表示越熱門。在情緒吻合的前提下，優先選擇 popularity 較高的歌曲。
 回傳固定 JSON 陣列格式，不要有任何其他文字：
 [
   { "index": <候選索引整數>, "reason": "<繁體中文推薦理由>" }
 ]`;
+}
 
 @Injectable()
 export class ClaudeService {
@@ -135,6 +137,7 @@ export class ClaudeService {
   async selectTracks(
     candidates: { title: string; artist: string; popularity: number }[],
     moodReason: string,
+    limit: number,
   ): Promise<TrackSelection[]> {
     const candidateList = candidates
       .map(
@@ -152,7 +155,7 @@ export class ClaudeService {
     const response = await this.anthropic.messages.create({
       model: 'claude-sonnet-4-5',
       max_tokens: 1024,
-      system: SELECT_SYSTEM_PROMPT,
+      system: buildSelectSystemPrompt(limit),
       messages: [{ role: 'user', content: userMessage }],
     });
 
