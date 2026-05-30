@@ -9,4 +9,6 @@ export const envValidationSchema = Joi.object({
   LOG_LEVEL: Joi.string()
     .valid('error', 'warn', 'info', 'http', 'verbose', 'debug')
     .default('info'),
+  RATE_LIMIT_MAX: Joi.number().integer().min(1).default(5),
+  RATE_LIMIT_WINDOW_SEC: Joi.number().integer().min(1).default(60),
 });

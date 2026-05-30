@@ -4,9 +4,6 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger as WinstonLogger } from 'winston';
 import { REDIS_CLIENT } from './cache.tokens';
 
-const RATE_LIMIT_MAX = 5;
-const RATE_LIMIT_WINDOW_SECONDS = 60;
-
 @Injectable()
 export class CacheService {
   constructor(
@@ -14,14 +11,18 @@ export class CacheService {
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
   ) {}
 
-  async incrementAndCheck(ip: string): Promise<boolean> {
+  async incrementAndCheck(
+    ip: string,
+    max: number,
+    windowSec: number,
+  ): Promise<boolean> {
     try {
       const key = `ratelimit:${ip}`;
       const count = await this.redis.incr(key);
       if (count === 1) {
-        await this.redis.expire(key, RATE_LIMIT_WINDOW_SECONDS);
+        await this.redis.expire(key, windowSec);
       }
-      return count > RATE_LIMIT_MAX;
+      return count > max;
     } catch (err) {
       this.logger.error('Redis rate limit check failed, allowing request', {
         err: (err as Error).message,

@@ -98,6 +98,8 @@ src/
 | `REDIS_URL` | ✅ | Redis 連線 URI |
 | `PORT` | 預設 3000 | HTTP 監聽 port |
 | `LOG_LEVEL` | 預設 `info` | Winston log 等級 |
+| `RATE_LIMIT_MAX` | 預設 5 | 每個 IP 在視窗時間內最大請求數 |
+| `RATE_LIMIT_WINDOW_SEC` | 預設 60 | Rate limit 視窗秒數（正式環境建議設為 3600） |
 
 本機開發請複製 `.env.example` 為 `.env`。
 

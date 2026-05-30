@@ -6,6 +6,7 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger as WinstonLogger } from 'winston';
@@ -16,6 +17,7 @@ export class RateLimitGuard implements CanActivate {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: WinstonLogger,
     private readonly cacheService: CacheService,
+    private readonly configService: ConfigService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -26,7 +28,14 @@ export class RateLimitGuard implements CanActivate {
       req.ip ??
       'unknown';
 
-    const exceeded = await this.cacheService.incrementAndCheck(ip);
+    const max = this.configService.get<number>('app.rateLimit.max') ?? 5;
+    const windowSec =
+      this.configService.get<number>('app.rateLimit.windowSec') ?? 60;
+    const exceeded = await this.cacheService.incrementAndCheck(
+      ip,
+      max,
+      windowSec,
+    );
     if (exceeded) {
       this.logger.warn('Rate limit exceeded', { ip });
       throw new HttpException(
