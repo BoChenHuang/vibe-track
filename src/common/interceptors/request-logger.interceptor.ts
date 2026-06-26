@@ -34,22 +34,22 @@ export class RequestLoggerInterceptor implements NestInterceptor {
       (Array.isArray(forwarded) ? forwarded[0] : forwarded) ??
       req.ip ??
       'unknown';
-    const input = req.body as Record<string, unknown> | null | undefined;
     const start = Date.now();
 
     this.logger.info(`→ ${method} ${url}`, {
       context: 'RequestLoggerInterceptor',
       ip,
-      ...(input && Object.keys(input).length > 0 && { input }),
     });
 
     return next.handle().pipe(
       tap((output: unknown) => {
         const duration = Date.now() - start;
+        const input = req.body as Record<string, unknown> | null | undefined;
         this.logger.info(`← ${method} ${url} ${res.statusCode} ${duration}ms`, {
           context: 'RequestLoggerInterceptor',
           ip,
           duration,
+          ...(input && Object.keys(input).length > 0 && { input }),
           ...(output != null && { output: output as Record<string, unknown> }),
         });
       }),
