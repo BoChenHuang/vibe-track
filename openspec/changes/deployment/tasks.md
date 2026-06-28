@@ -1,19 +1,19 @@
 ## 1. Swagger 文件
 
-- [ ] 1.1 安裝 `@nestjs/swagger`：`npm install @nestjs/swagger`
-- [ ] 1.2 在 `main.ts` 設定 SwaggerModule，mount 在 `/api`
-- [ ] 1.3 在 `AnalyzeController` 加上 `@ApiTags`、`@ApiOperation`、`@ApiResponse` 等裝飾器
+- [x] 1.1 安裝 `@nestjs/swagger`：`npm install @nestjs/swagger`
+- [x] 1.2 在 `main.ts` 設定 SwaggerModule，mount 在 `/api`
+- [x] 1.3 在 `AnalyzeController` 加上 `@ApiTags`、`@ApiOperation`、`@ApiResponse` 等裝飾器
 
 ## 2. render.yaml
 
-- [ ] 2.1 在專案根目錄建立 `render.yaml`
-- [ ] 2.2 設定 Web Service：buildCommand `npm install && npm run build`，startCommand `npm run start:prod`
-- [ ] 2.3 列出所有 envVars（不含實際值，只列 key）
+- [x] 2.1 在專案根目錄建立 `render.yaml`
+- [x] 2.2 設定 Web Service：buildCommand `npm install && npm run build`，startCommand `npm run start:prod`
+- [x] 2.3 列出所有 envVars（不含實際值，只列 key）
 
 ## 3. 推送與部署
 
-- [ ] 3.1 確認 `.env` 已加入 `.gitignore`
-- [ ] 3.2 確認 `.env.example` 存在且列出所有必要變數
+- [x] 3.1 確認 `.env` 已加入 `.gitignore`
+- [x] 3.2 確認 `.env.example` 存在且列出所有必要變數
 - [ ] 3.3 推送程式碼到 GitHub
 
 ## 4. Render 設定
