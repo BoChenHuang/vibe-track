@@ -1,0 +1,58 @@
+import {
+  CallHandler,
+  ExecutionContext,
+  Inject,
+  Injectable,
+  NestInterceptor,
+} from '@nestjs/common';
+import { ClsService } from 'nestjs-cls';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger as WinstonLogger } from 'winston';
+import { Observable, tap } from 'rxjs';
+import { Request, Response } from 'express';
+
+@Injectable()
+export class RequestLoggerInterceptor implements NestInterceptor {
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: WinstonLogger,
+    private readonly cls: ClsService,
+  ) {}
+
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+    const http = context.switchToHttp();
+    const req = http.getRequest<Request>();
+    const res = http.getResponse<Response>();
+    const requestId = this.cls.getId();
+
+    if (requestId) {
+      res.setHeader('X-Request-Id', requestId);
+    }
+
+    const { method, url } = req;
+    const forwarded = req.headers['x-forwarded-for'];
+    const ip =
+      (Array.isArray(forwarded) ? forwarded[0] : forwarded) ??
+      req.ip ??
+      'unknown';
+    const start = Date.now();
+
+    this.logger.info(`→ ${method} ${url}`, {
+      context: 'RequestLoggerInterceptor',
+      ip,
+    });
+
+    return next.handle().pipe(
+      tap((output: unknown) => {
+        const duration = Date.now() - start;
+        const input = req.body as Record<string, unknown> | null | undefined;
+        this.logger.info(`← ${method} ${url} ${res.statusCode} ${duration}ms`, {
+          context: 'RequestLoggerInterceptor',
+          ip,
+          duration,
+          ...(input && Object.keys(input).length > 0 && { input }),
+          ...(output != null && { output: output as Record<string, unknown> }),
+        });
+      }),
+    );
+  }
+}

@@ -1,0 +1,15 @@
+export enum MarketCode {
+  TW = 'TW',
+  US = 'US',
+  JP = 'JP',
+  KR = 'KR',
+  HK = 'HK',
+  SG = 'SG',
+  GB = 'GB',
+  AU = 'AU',
+  CA = 'CA',
+  FR = 'FR',
+  DE = 'DE',
+  ES = 'ES',
+  BR = 'BR',
+}
