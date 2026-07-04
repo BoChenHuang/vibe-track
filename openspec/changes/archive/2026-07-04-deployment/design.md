@@ -35,6 +35,11 @@ services:
         value: production
 ```
 
+**D4：使用 Upstash 取代 Render Redis**
+- Render 已取消免費 Redis 方案，改用 Upstash（免費 256MB）
+- 連線需使用 `rediss://`（TLS），ioredis 自動處理
+- Upstash Redis URL 格式：`rediss://default:<token>@<host>:6379`
+
 **D3：Swagger 文件用 @nestjs/swagger**
 - 在 `main.ts` 設定，mount 在 `/api`
 - 方便 portfolio 展示 API 介面
@@ -42,13 +47,13 @@ services:
 ## Risks / Trade-offs
 
 - [Render free tier 休眠] → cron-job.org keep-alive 緩解，但首次冷啟動仍需 ~30 秒
-- [Redis free tier 限制] → Render Redis 有 25MB 上限，足夠 MVP 使用
+- [Redis free tier 限制] → 使用 Upstash 免費方案（256MB），Render 已無免費 Redis
 
 ## Migration Plan
 
 1. 推送程式碼到 GitHub
 2. 在 Render 建立 Web Service，連接 GitHub repo
-3. 在 Render 建立 Redis 服務，取得 `REDIS_URL`
+3. 在 Upstash 建立 Redis，取得 `REDIS_URL`（格式 `rediss://`）
 4. 設定所有環境變數
 5. 部署成功後在 cron-job.org 建立每 10 分鐘的 ping 任務
 6. 用 Postman 打 production URL 確認功能正常
