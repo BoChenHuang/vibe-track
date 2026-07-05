@@ -36,7 +36,12 @@ export class AnalyzeService {
       );
     }
 
-    const cacheKey = this.buildCacheKey(text, imageFile?.buffer);
+    const cacheKey = this.buildCacheKey(
+      text,
+      imageFile?.buffer,
+      resolvedLimit,
+      market,
+    );
     const cached = await this.cacheService.getCached(cacheKey);
     if (cached) {
       const parsed = JSON.parse(cached) as AnalyzeResponseDto;
@@ -112,10 +117,17 @@ export class AnalyzeService {
     return result;
   }
 
-  private buildCacheKey(text?: string, imageBuffer?: Buffer): string {
+  private buildCacheKey(
+    text?: string,
+    imageBuffer?: Buffer,
+    limit?: number,
+    market?: string,
+  ): string {
     const hash = createHash('md5')
       .update(text ?? '')
       .update(imageBuffer ?? Buffer.alloc(0))
+      .update(String(limit ?? 8))
+      .update(market ?? '')
       .digest('hex');
     return `cache:${hash}`;
   }
